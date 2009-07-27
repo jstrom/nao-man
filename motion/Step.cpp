@@ -39,6 +39,36 @@ Step::Step(const WalkVector &target,
     setStepSize(target,last);
     setStepLiftMagnitude();
 }
+Step::Step(const StepDisplacement &target,
+           const AbstractGait & gait, const Foot _foot,
+	   const WalkVector &last,
+	   const StepType _type)
+	: sOffsetY(gait.stance[WP::LEG_SEPARATION_Y]*0.5f),
+	  foot(_foot),type(_type),zmpd(false)
+{
+  copyGaitAttributes(gait.step,gait.zmp,gait.stance);
+
+    switch(_type){
+    case REGULAR_STEP:
+        updateFrameLengths(stepConfig[WP::DURATION],
+                           stepConfig[WP::DBL_SUPP_P]);
+        break;
+    case END_STEP:
+        //For end steps, we are always double support, and
+        //we make the length the preview period
+        updateFrameLengths(static_cast<float>(Observer::NUM_PREVIEW_FRAMES) *
+                           MotionConstants::MOTION_FRAME_LENGTH_S,
+                           1.0f);
+        break;
+    }
+
+    //After we assign elements of the gait to this step, lets clip
+	//but we need to convert the step destination to 
+	WalkVector target_vel = getVelFromDisp(target);
+	walkVector =target_vel; //probably unnecessary
+    setStepSize(target_vel,last);
+    setStepLiftMagnitude();
+}
 
 
 // Copy constructor to allow changing reference frames:
@@ -118,14 +148,7 @@ void Step::setStepSize(const WalkVector &target,
   printf("After leg clipping (%g,%g,%g)\n",new_walk.x,new_walk.y,new_walk.theta);
 #endif
 
-  //Now that we have clipped the velocities, we need to convert them to distance
-  //for use with this step. Note that for y and theta, we need a factor of
-  //two, since you can only stafe on every other step.
-
-  //HACK! for bacwards compatibility, the step_y is not adjusted correctly
-  const float step_x = new_walk.x*stepConfig[WP::DURATION];
-  const float step_y = new_walk.y*stepConfig[WP::DURATION];//*2.0f;
-  const float step_theta = new_walk.theta*stepConfig[WP::DURATION]*2.0f;
+  const StepDisplacement step = getDispFromVel(new_walk);
 
   //Huge architectural HACK!!!  We need to fix our transforms so we don't need to do this
   //anymore
@@ -133,10 +156,10 @@ void Step::setStepSize(const WalkVector &target,
   //center of the foot
   const float leg_sign = (foot==LEFT_FOOT ?
 			  1.0f : -1.0f);
-  const float computed_x = step_x - sin(std::abs(step_theta)) *sOffsetY;
-  const float computed_y = step_y +
-    leg_sign*sOffsetY*cos(step_theta);
-  const float computed_theta = step_theta;
+  const float computed_x = step.x - sin(std::abs(step.theta)) *sOffsetY;
+  const float computed_y = step.y +
+    leg_sign*sOffsetY*cos(step.theta);
+  const float computed_theta = step.theta;
 
 
 
@@ -152,6 +175,25 @@ void Step::setStepSize(const WalkVector &target,
 
 }
 
+
+const StepDisplacement Step::getDispFromVel(const WalkVector &vel){
+	//From the velocities, we need to get distance
+	//Note that for y and theta, we need a factor of
+	//two, since you can only stafe on every other step.
+
+	//HACK! for bacwards compatibility, the y dir. is not adjusted correctly
+	const StepDisplacement  disp = {vel.x*stepConfig[WP::DURATION],
+							   vel.y*stepConfig[WP::DURATION]//*2.0f
+							   ,vel.theta*stepConfig[WP::DURATION]*2.0f};
+	return disp;
+}
+
+const WalkVector Step::getVelFromDisp(const StepDisplacement &disp){
+	const WalkVector  vel = {disp.x/stepConfig[WP::DURATION],
+							 disp.y/(stepConfig[WP::DURATION])//*2.0f)
+							 ,disp.theta/(stepConfig[WP::DURATION]*2.0f)};
+	return vel;
+}
 
 const WalkVector Step::elipseClipVelocities(const WalkVector & source){
   // std::cout << "Ellipsoid clip input ("<<source.x<<","<<source.y

@@ -27,6 +27,11 @@ struct WalkVector {
   float theta;
 };
 
+struct StepDisplacement {
+  float x;
+  float y;
+  float theta;
+};
 static const WalkVector ZERO_WALKVECTOR = {0.0f,0.0f,0.0f};
 
 /**
@@ -39,6 +44,12 @@ public:
          const AbstractGait & gait,	 
 	 const Foot _foot,
 	 const WalkVector &last = ZERO_WALKVECTOR,
+         const StepType _type = REGULAR_STEP);
+
+    Step(const StepDisplacement &target,
+         const AbstractGait & gait,
+		 const Foot _foot,
+		 const WalkVector &last = ZERO_WALKVECTOR,
          const StepType _type = REGULAR_STEP);
     // Copy constructor to allow changing reference frames:
     Step(const float new_x, const float new_y, const float new_theta,
@@ -85,6 +96,9 @@ private:
     const WalkVector accelClipVelocities(const WalkVector & source,
 					 const WalkVector & source);
     const WalkVector lateralClipVelocities(const WalkVector & source);
+
+	const StepDisplacement getDispFromVel(const WalkVector &vel);
+	const WalkVector getVelFromDisp(const StepDisplacement &disp);
 };
 
 static const boost::shared_ptr<Step> EMPTY_STEP =
