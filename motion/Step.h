@@ -92,13 +92,22 @@ private:
     
     void setStepLiftMagnitude();
 
-    const WalkVector elipseClipVelocities(const WalkVector & source);
+	const WalkVector elipseClipVelocities(const WalkVector & source);
+    static const WalkVector elipseClipVelocities(const WalkVector & source,
+												 const float step_config[]);
+
+
     const WalkVector accelClipVelocities(const WalkVector & source,
 					 const WalkVector & source);
     const WalkVector lateralClipVelocities(const WalkVector & source);
 
 	const StepDisplacement getDispFromVel(const WalkVector &vel);
 	const WalkVector getVelFromDisp(const StepDisplacement &disp);
+
+	static const StepDisplacement getDispFromVel(const WalkVector &vel,
+												 const float step_config[]);
+	static const WalkVector getVelFromDisp(const StepDisplacement &disp,
+										   const float step_config[]);
 };
 
 static const boost::shared_ptr<Step> EMPTY_STEP =

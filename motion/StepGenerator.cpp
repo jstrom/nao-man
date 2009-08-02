@@ -664,6 +664,12 @@ void StepGenerator::setDistance(const float x_dist, const float y_dist,
 
 	//3. Make the steps, and add them to the tentative list
 
+	//PROBLEM: the problem with the above method is that it makes it very difficult
+	//to get exact results when there is acceleration clipping, etc.
+
+	//Solution: Iteratively generate steps that each try to get to the destination
+	//          though it would be ideal if these were somehow evenly spaced.
+
 }
 
 /*  Set up the walking engine for starting with a swinging step on the left,

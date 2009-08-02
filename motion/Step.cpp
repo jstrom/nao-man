@@ -140,6 +140,8 @@ void Step::setStepSize(const WalkVector &target,
 #endif
 
   walkVector = new_walk; //save the walk vector for next time
+  //NOTE: It's really important that we save our "working" walk vector now,
+  //before clip it laterally.
 
   //check  if we need to clip lateral movement of this leg
   new_walk = lateralClipVelocities(new_walk);
@@ -175,27 +177,47 @@ void Step::setStepSize(const WalkVector &target,
 
 }
 
-
 const StepDisplacement Step::getDispFromVel(const WalkVector &vel){
+	return getDispFromVel(vel, stepConfig);
+}
+const StepDisplacement Step::getDispFromVel(const WalkVector &vel,
+											const float step_config[]){
 	//From the velocities, we need to get distance
 	//Note that for y and theta, we need a factor of
 	//two, since you can only stafe on every other step.
 
 	//HACK! for bacwards compatibility, the y dir. is not adjusted correctly
-	const StepDisplacement  disp = {vel.x*stepConfig[WP::DURATION],
-							   vel.y*stepConfig[WP::DURATION]//*2.0f
-							   ,vel.theta*stepConfig[WP::DURATION]*2.0f};
+	const StepDisplacement  disp = {vel.x*step_config[WP::DURATION],
+									vel.y*step_config[WP::DURATION]//*2.0f
+									,vel.theta*step_config[WP::DURATION]*2.0f};
 	return disp;
 }
 
 const WalkVector Step::getVelFromDisp(const StepDisplacement &disp){
-	const WalkVector  vel = {disp.x/stepConfig[WP::DURATION],
-							 disp.y/(stepConfig[WP::DURATION])//*2.0f)
-							 ,disp.theta/(stepConfig[WP::DURATION]*2.0f)};
+	getVelFromDisp(disp,stepConfig);
+}
+const WalkVector Step::getVelFromDisp(const StepDisplacement &disp,
+									  const float step_config[]){
+	const WalkVector  vel = {disp.x/step_config[WP::DURATION],
+							 disp.y/(step_config[WP::DURATION])//*2.0f)
+							 ,disp.theta/(step_config[WP::DURATION]*2.0f)};
 	return vel;
 }
 
+//non static wrapper
 const WalkVector Step::elipseClipVelocities(const WalkVector & source){
+	return elipseClipVelocities(source,stepConfig);
+}
+
+/**
+ *  This method clips the desired velocities to within a safe margin,
+ *  as determined by an ellipsoid desribing the maximum velocities.
+ *  Note, that this method is static since other modules (like the step
+ *  generator, need to have access to it)
+ *
+ */
+const WalkVector Step::elipseClipVelocities(const WalkVector & source,
+											const float step_config[]){
   // std::cout << "Ellipsoid clip input ("<<source.x<<","<<source.y
   // 			<<","<<source.theta<<")"<<std::endl;
 
@@ -210,12 +232,12 @@ const WalkVector Step::elipseClipVelocities(const WalkVector & source){
   //turning and lateral/forward motion by 'converting' the radians to something 
   //more equally weighted with mm's
   const float max_xy_mag = std::sqrt(std::pow(
-										 stepConfig[WP::MAX_VEL_Y]
+										 step_config[WP::MAX_VEL_Y]
 										 *std::sin(theta),2)
 									 + std::pow(
-										 stepConfig[WP::MAX_VEL_X]
+										 step_config[WP::MAX_VEL_X]
 										 *std::cos(theta),2));
-  const float rad_to_mm = max_xy_mag / stepConfig[WP::MAX_VEL_THETA];
+  const float rad_to_mm = max_xy_mag / step_config[WP::MAX_VEL_THETA];
   // cout << "xy_mag = " << xy_mag << " converted theta = " << source.theta*rad_to_mm<<endl;
   const float phi = NBMath::safe_atan2(xy_mag,source.theta*rad_to_mm);
 
@@ -223,21 +245,21 @@ const WalkVector Step::elipseClipVelocities(const WalkVector & source){
 
   float forward_max =0.0f;
   if(source.x > 0)
-    forward_max = std::abs(stepConfig[WP::MAX_VEL_X]
+    forward_max = std::abs(step_config[WP::MAX_VEL_X]
 						   *std::cos(theta)
 						   *std::sin(phi));
   else
-    forward_max = std::abs(stepConfig[WP::MIN_VEL_X]
+    forward_max = std::abs(step_config[WP::MIN_VEL_X]
 						   *std::cos(theta)
 						   *std::sin(phi));
 
   const float horizontal_max =
-    std::abs(stepConfig[WP::MAX_VEL_Y]
+    std::abs(step_config[WP::MAX_VEL_Y]
 			 *std::sin(theta)
 			 *std::sin(phi));
 
   const float turning_max =
-    std::abs(stepConfig[WP::MAX_VEL_THETA]
+    std::abs(step_config[WP::MAX_VEL_THETA]
 			 *std::cos(phi));
   // cout << "Clipping y="<<source.y<<" according to"<<horizontal_max<<endl;
   const float new_y_vel = NBMath::clip(source.y,horizontal_max);
