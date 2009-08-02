@@ -125,7 +125,8 @@ public:
     void setSpeed(const float _x, const float _y, const float _theta);
     void takeSteps(const float _x, const float _y, const float _theta,
                    const int _numSteps);
-
+	void setDistance(const float x_dist, const float y_dist,
+					 const float z_dist);
     std::vector <float> getOdometryUpdate();
 
     void resetHard();

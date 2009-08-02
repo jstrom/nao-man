@@ -650,6 +650,22 @@ void StepGenerator::takeSteps(const float _x, const float _y, const float _theta
 }
 
 
+void StepGenerator::setDistance(const float x_dist, const float y_dist,
+								const float z_dist){
+	//The overview for how to go about this is as follows:
+
+	//0. Clear any "tentative" steps
+
+	//1. Determine where the last "finalized" step would put the robot, relative to
+	//the current postion (which is not necessarily aligned with any S frame)
+
+	//2. Use the clipping algorithm in Step to find out how many steps it will
+	//take to get there.
+
+	//3. Make the steps, and add them to the tentative list
+
+}
+
 /*  Set up the walking engine for starting with a swinging step on the left,
  if startLeft is true*/
 void StepGenerator::resetSteps(const bool startLeft){
