@@ -148,7 +148,8 @@ private: // Helper methods
     void swapSupportLegs();
 
 	const boost::shared_ptr<Step> generateStep(float _x,float _y,
-                      float _theta);
+											   float _theta,
+											   bool useDistance = false);
     void fillZMP(const boost::shared_ptr<Step> newStep );
     void fillZMPRegular(const boost::shared_ptr<Step> newStep );
     void fillZMPEnd(const boost::shared_ptr<Step> newStep );

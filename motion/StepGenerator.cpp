@@ -720,7 +720,7 @@ void StepGenerator::setDistance(const float x_dist, const float y_dist,
 		const StepDisplacement long_target = {x_remaining, y_remaining,
 											  theta_remaining};
 
-		const StepDisplacement clipped_long_target =
+		const StepDisplacement clipped =
 			Step::ellipseClipDisplacement(long_target,gait->step);
 
 		//Now that we know, in general, what the maximum size step in
@@ -731,14 +731,31 @@ void StepGenerator::setDistance(const float x_dist, const float y_dist,
 		//Calculate the number of steps in each direction:
 		//Note the 2.0f factor for lateral and turning,
 		//since we can't go at maximum speed each step.
-		const int x_steps = static_cast<int>(std::ceil(x_remaining /
-													   clipped_long_target.x));
-		const int y_steps = static_cast<int>(std::ceil(2.0f * y_remaining /
-													   clipped_long_target.y));
-		const int theta_steps =
-			static_cast<int>(std::ceil(2.0f * theta_remaining /
-									   clipped_long_target.theta));
 
+
+		cout << "x_remain = "<<x_remaining<<"  clipped.x ="<<clipped.x<<endl;
+		cout << "theta_remain = "<<x_remaining<<"  clipped.theta ="<<clipped.theta<<endl;
+		int x_steps = 0, y_steps = 0, theta_steps = 0;
+		if(clipped.x != 0.0f){
+			x_steps = static_cast<int>(std::ceil(x_remaining /
+												 clipped.x));
+		}
+
+		const float lateral_scale = (y_remaining > clipped.y? 2.0f : 1.0f);
+		if(clipped.y != 0.0f){
+			y_steps = static_cast<int>(std::ceil(lateral_scale * y_remaining /
+												 clipped.y));
+		}
+
+		const float turn_scale = (theta_remaining > clipped.theta
+									 ? 2.0f : 1.0f);
+		if(clipped.theta!= 0.0f){
+			theta_steps =
+				static_cast<int>(std::ceil(turn_scale * theta_remaining /
+										   clipped.theta));
+		}
+
+		cout << "Num steps are "<<x_steps<<","<<y_steps<<","<<theta_steps<<endl;
 		const int numSteps = std::max(x_steps,
 										std::max(y_steps,theta_steps));
 
@@ -746,7 +763,8 @@ void StepGenerator::setDistance(const float x_dist, const float y_dist,
 		const float step_y = y_remaining / numSteps;
 		const float step_theta = theta_remaining / numSteps;
 
-		shared_ptr<Step> newStep = generateStep(step_x, step_y, step_theta);
+		shared_ptr<Step> newStep = generateStep(step_x, step_y, step_theta,
+												true);
 
 		//Now that the step has been generated, peek inside to see how far it
 		//actually went:
@@ -759,9 +777,12 @@ void StepGenerator::setDistance(const float x_dist, const float y_dist,
 
 		const ufvector3 dest_this_s = prod(get_sprime_s(newStep), dest_last_s);
 
+		cout << "Generated new step:" <<*newStep<<endl;
+		cout << "Dests: last: "<<dest_last_s <<" next:"<<dest_this_s<<endl;
 		x_remaining = dest_this_s(0);
 		y_remaining = dest_this_s(1);
 		theta_remaining -= newStep->theta;
+		cout << "New theta  = "<<theta_remaining<<endl;
 
 
 	}
@@ -876,8 +897,9 @@ void StepGenerator::resetSteps(const bool startLeft){
  *  added to the list!
  */
 const shared_ptr<Step> StepGenerator::generateStep( float _x,
-                                  float _y,
-                                  float _theta) {
+													float _y,
+													float _theta,
+													bool useDistance) {
     //We have this problem that we can't simply start and stop the robot:
     //depending on the step type, we generate different types of ZMP
     //which means after any given step, only certain other steps types are
@@ -944,15 +966,31 @@ const shared_ptr<Step> StepGenerator::generateStep( float _x,
     //Also, we need to scale for the fact that we can only turn or strafe every other step
 
 
-    const WalkVector new_walk = {_x,_y,_theta};
 
-    shared_ptr<Step> step(new Step(new_walk,
-                                   *gait,
-                                   (nextStepIsLeft ?
-                                    LEFT_FOOT : RIGHT_FOOT),
-				   lastQueuedStep->walkVector,
-                                   type));
+    shared_ptr<Step> step;
 
+	//HACK -- there is a better way to do this besides this dumb
+	//boolean, but I am currently too lazy to do it right
+	//(split the above logic into its own function, and
+	// have two separate methods for creating steps
+	if(useDistance){
+		const StepDisplacement new_walk = {_x,_y,_theta};
+		step = shared_ptr<Step>(new Step(new_walk,
+										 *gait,
+										 (nextStepIsLeft ?
+											  LEFT_FOOT : RIGHT_FOOT),
+										 lastQueuedStep->walkVector,
+										 type));
+	}else{
+		const WalkVector new_walk = {_x,_y,_theta};
+
+		step = shared_ptr<Step>(new Step(new_walk,
+										 *gait,
+										 (nextStepIsLeft ?
+											  LEFT_FOOT : RIGHT_FOOT),
+										 lastQueuedStep->walkVector,
+										 type));
+	}
 #ifdef DEBUG_STEPGENERATOR
     cout << "Generated a new step: "<<*step<<endl;
 #endif

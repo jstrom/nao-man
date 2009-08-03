@@ -42,11 +42,10 @@ else:
 
 def walkdist(player):
     if player.firstFrame():
-        cmd = motion.DistanceCommand(100,0,0)
+        cmd = motion.DistanceCommand(100,0,90)
         player.brain.motion.sendDistanceCommand(cmd)
-    elif not player.brain.motion.isBodyActive:
+    elif not player.brain.motion.isWalkActive():
         return player.goLater('sitdown')
-
     return player.stay()
 
 def switchgaits1(player):
