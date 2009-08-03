@@ -32,13 +32,22 @@ def gamePlaying(player):
         player.brain.tracker.trackBall()
 #        player.penalizeHeads();
 
-    return player.goLater('switchgaits1')
+    return player.goLater('walkdist')
 
 if WEBOTS_ACTIVE:
     gameInitial=gamePlaying
     print "Webots is active!!!!"
 else:
     print "Webots is in-active!!!!"
+
+def walkdist(player):
+    if player.firstFrame():
+        cmd = motion.DistanceCommand(100,0,0)
+        player.brain.motion.sendDistanceCommand(cmd)
+    elif not player.brain.motion.isBodyActive:
+        return player.goLater('sitdown')
+
+    return player.stay()
 
 def switchgaits1(player):
     if player.firstFrame():

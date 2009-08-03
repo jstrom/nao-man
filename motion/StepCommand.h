@@ -4,7 +4,7 @@
 class StepCommand : public MotionCommand {
 public:
     StepCommand(float _x_mms, float _y_mms, float _theta_rads, int nSteps = 1)
-  : MotionCommand(MotionConstants::WALK),
+  : MotionCommand(MotionConstants::STEP),
     x_mms(_x_mms),y_mms(_y_mms),theta_rads(_theta_rads), numSteps(nSteps)
         { setChainList(); }
     ~StepCommand(){}
