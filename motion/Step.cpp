@@ -188,7 +188,7 @@ const StepDisplacement Step::getDispFromVel(const WalkVector &vel,
 
 	//HACK! for bacwards compatibility, the y dir. is not adjusted correctly
 	const StepDisplacement  disp = {vel.x*step_config[WP::DURATION],
-									vel.y*step_config[WP::DURATION]//*2.0f
+									vel.y*step_config[WP::DURATION]*2.0f
 									,vel.theta*step_config[WP::DURATION]*2.0f};
 	return disp;
 }
@@ -199,7 +199,7 @@ const WalkVector Step::getVelFromDisp(const StepDisplacement &disp){
 const WalkVector Step::getVelFromDisp(const StepDisplacement &disp,
 									  const float step_config[]){
 	const WalkVector  vel = {disp.x/step_config[WP::DURATION],
-							 disp.y/(step_config[WP::DURATION])//*2.0f)
+							 disp.y/(step_config[WP::DURATION]*2.0f)
 							 ,disp.theta/(step_config[WP::DURATION]*2.0f)};
 	return vel;
 }
