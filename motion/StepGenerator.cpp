@@ -649,20 +649,122 @@ void StepGenerator::takeSteps(const float _x, const float _y, const float _theta
     x = 0.0f; y =0.0f; theta = 0.0f;
 }
 
-
+/**
+ * Method to generate steps to move a to particular distance from where the
+ * robot is now.
+ * NOTES:
+ *  - This method takes computation (of a rather limited amount) so its use should
+ *    be carefully considered.
+ *  - This method generates all steps at once. If the robot changes gaits,
+ *    this effect will not be apparent until these steps have been taken.
+ *  - The algorithm chooses, as much as possible, to make the steps generated
+ *    of equal size, rather than moving at maximum speed in some direction,
+ *    but needing to take some remaining steps with only a partial vector.
+ *    Another method could be made for the other case (where one desires
+ *    to move at maximum speed. In fact, this is considerably easier than
+ *    trying to equalize the steps, because of how clipping is done
+ */
 void StepGenerator::setDistance(const float x_dist, const float y_dist,
-								const float z_dist){
+								const float theta_dist){
 	//The overview for how to go about this is as follows:
 
 	//0. Clear any "tentative" steps
+	futureSteps.clear();
 
-	//1. Determine where the last "finalized" step would put the robot, relative to
-	//the current postion (which is not necessarily aligned with any S frame)
+	//default, if not currently walking
+	ufvector3 com_sfuture = CoordFrame3D::vector3D(0,0);
+	float com_rotation_sfuture = 0.0f;
+	if(done){
+		//pick which foot to start with
+        const bool startLeft = decideStartLeft(x_dist,theta_dist);
+        resetSteps(startLeft);
+		done = false;
+	}else{
 
+		//1. Determine where the last "finalized" step would put the robot,
+		//relative to
+		//the current postion (which is not necessarily aligned with any S frame)
+
+		list<shared_ptr<Step> >::iterator itr = currentZMPDSteps.begin();
+
+		//We're going to build a transformation matrix which will take the current
+		//com_f position, and translate it into the s frame of the most recently
+
+		//First examine the current support step:
+		ufmatrix3 f_sfuture_Transform =  get_f_s(*itr); itr++;
+
+		//Next cycle through the remaining ZMPD steps:
+		for(; itr != currentZMPDSteps.end(); itr++ ){
+			const ufmatrix3 new_Transform = prod(get_sprime_s(*itr),
+												 f_sfuture_Transform);
+			f_sfuture_Transform = new_Transform;
+		}
+
+		com_sfuture = prod(f_sfuture_Transform, com_f);
+		//amount of rotation already covered in the current steps: //check sign!
+		com_rotation_sfuture = -safe_asin(f_sfuture_Transform(1,0));
+	}
 	//2. Use the clipping algorithm in Step to find out how many steps it will
 	//take to get there.
 
+	//calculate how much distance we still need to cover
+	float x_remaining  = x_dist + com_sfuture(0);
+	float y_remaining  = y_dist + com_sfuture(1);
+	float theta_remaining  = theta_dist + com_rotation_sfuture;
+
 	//3. Make the steps, and add them to the tentative list
+
+	while(x_remaining != 0.0f || y_remaining != 0.0f || theta_remaining != 0.0f){
+		//First, calculate the maximum size step we can take in the direction of
+		//the goal:
+		const StepDisplacement long_target = {x_remaining, y_remaining,
+											  theta_remaining};
+
+		const StepDisplacement clipped_long_target =
+			Step::ellipseClipDisplacement(long_target,gait->step);
+
+		//Now that we know, in general, what the maximum size step in
+		//that direction is, we need to generate an estimate for how
+		//many steps it is going to take, and then how to evenly
+		//divide the remaining distance over those steps
+
+		//Calculate the number of steps in each direction:
+		//Note the 2.0f factor for lateral and turning,
+		//since we can't go at maximum speed each step.
+		const int x_steps = static_cast<int>(std::ceil(x_remaining /
+													   clipped_long_target.x));
+		const int y_steps = static_cast<int>(std::ceil(2.0f * y_remaining /
+													   clipped_long_target.y));
+		const int theta_steps =
+			static_cast<int>(std::ceil(2.0f * theta_remaining /
+									   clipped_long_target.theta));
+
+		const int numSteps = std::max(x_steps,
+										std::max(y_steps,theta_steps));
+
+		const float step_x = x_remaining / numSteps;
+		const float step_y = y_remaining / numSteps;
+		const float step_theta = theta_remaining / numSteps;
+
+		shared_ptr<Step> newStep = generateStep(step_x, step_y, step_theta);
+
+		//Now that the step has been generated, peek inside to see how far it
+		//actually went:
+
+
+		//However, we also need to adjust these remaining values into the new
+		//s coordinate frame:
+		const ufvector3 dest_last_s = CoordFrame3D::vector3D(x_remaining,
+															 y_remaining);
+
+		const ufvector3 dest_this_s = prod(get_sprime_s(newStep), dest_last_s);
+
+		x_remaining = dest_this_s(0);
+		y_remaining = dest_this_s(1);
+		theta_remaining -= newStep->theta;
+
+
+	}
 
 	//PROBLEM: the problem with the above method is that it makes it very difficult
 	//to get exact results when there is acceleration clipping, etc.
@@ -758,7 +860,7 @@ void StepGenerator::resetSteps(const bool startLeft){
     shared_ptr<Step> firstSupportStep =
       shared_ptr<Step>(new Step(ZERO_WALKVECTOR,
                                   *gait,
-                                  firstSupportFoot,ZERO_WALKVECTOR,END_STEP)); 
+                                  firstSupportFoot,ZERO_WALKVECTOR,END_STEP));
     shared_ptr<Step> dummyStep =
         shared_ptr<Step>(new Step(ZERO_WALKVECTOR,
                                   *gait,
@@ -772,8 +874,12 @@ void StepGenerator::resetSteps(const bool startLeft){
 }
 
 
-//currently only does two sets of steps side by side
-void StepGenerator::generateStep( float _x,
+/*
+ *  Method generates a step, placing it in futureSteps AND returns a reference
+ *  to the step, but be careful with this reference, since it is already been
+ *  added to the list!
+ */
+const shared_ptr<Step> StepGenerator::generateStep( float _x,
                                   float _y,
                                   float _theta) {
     //We have this problem that we can't simply start and stop the robot:
@@ -858,6 +964,8 @@ void StepGenerator::generateStep( float _x,
     lastQueuedStep = step;
     //switch feet after each step is generated
     nextStepIsLeft = !nextStepIsLeft;
+
+	return step;
 }
 
 /**
@@ -969,13 +1077,22 @@ const ufmatrix3 StepGenerator::get_s_sprime(const shared_ptr<Step> step){
     const float y = step->y;
     const float theta = step->theta;
 
-    const ufmatrix3 trans_f_s =
+    const ufmatrix3 trans_f_s = //Name might be inconsistent..?
         CoordFrame3D::translation3D(0,-leg_sign*HIP_OFFSET_Y);
 
     const ufmatrix3 trans_sprime_f =
         prod(CoordFrame3D::translation3D(x,y),
              CoordFrame3D::rotation3D(CoordFrame3D::Z_AXIS,theta));
     return prod(trans_sprime_f,trans_f_s);
+}
+
+/**
+ * Returns the transformation matrix that mvoes points from
+ * the f frame into the s frame;
+ */
+const ufmatrix3 StepGenerator::get_f_s(const shared_ptr<Step> step){
+    const float leg_sign = (step->foot == LEFT_FOOT ? 1.0f : -1.0f);
+    return CoordFrame3D::translation3D(0, leg_sign*HIP_OFFSET_Y);
 }
 
 void StepGenerator::resetQueues(){

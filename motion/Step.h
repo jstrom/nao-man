@@ -41,7 +41,7 @@ class Step{
 public:
     Step(const Step & other);
     Step(const WalkVector &target,
-         const AbstractGait & gait,	 
+         const AbstractGait & gait,
 	 const Foot _foot,
 	 const WalkVector &last = ZERO_WALKVECTOR,
          const StepType _type = REGULAR_STEP);
@@ -89,11 +89,11 @@ private:
     void copyAttributesFromOther(const Step &other);
     void setStepSize(const WalkVector &target,
 		     const WalkVector &last);
-    
+
     void setStepLiftMagnitude();
 
-	const WalkVector elipseClipVelocities(const WalkVector & source);
-    static const WalkVector elipseClipVelocities(const WalkVector & source,
+	const WalkVector ellipseClipVelocities(const WalkVector & source);
+    static const WalkVector ellipseClipVelocities(const WalkVector & source,
 												 const float step_config[]);
 
 
@@ -108,6 +108,10 @@ private:
 												 const float step_config[]);
 	static const WalkVector getVelFromDisp(const StepDisplacement &disp,
 										   const float step_config[]);
+public:
+	static const StepDisplacement
+	ellipseClipDisplacement(const StepDisplacement & source,
+							const float step_config[]);
 };
 
 static const boost::shared_ptr<Step> EMPTY_STEP =

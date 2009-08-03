@@ -128,7 +128,7 @@ void Step::setStepSize(const WalkVector &target,
   printf("Input to setStepSpeed is (%g,%g,%g), (%g,%g,%g), \n",target.x,target.y,target.theta,
 	 last.x,last.y,last.theta);
 #endif
-  new_walk = elipseClipVelocities(target);
+  new_walk = ellipseClipVelocities(target);
 #ifdef DEBUG_STEP
   printf("After vel clipping (%g,%g,%g)\n",new_walk.x,new_walk.y,new_walk.theta);
 #endif
@@ -194,7 +194,7 @@ const StepDisplacement Step::getDispFromVel(const WalkVector &vel,
 }
 
 const WalkVector Step::getVelFromDisp(const StepDisplacement &disp){
-	getVelFromDisp(disp,stepConfig);
+	return getVelFromDisp(disp,stepConfig);
 }
 const WalkVector Step::getVelFromDisp(const StepDisplacement &disp,
 									  const float step_config[]){
@@ -205,8 +205,17 @@ const WalkVector Step::getVelFromDisp(const StepDisplacement &disp,
 }
 
 //non static wrapper
-const WalkVector Step::elipseClipVelocities(const WalkVector & source){
-	return elipseClipVelocities(source,stepConfig);
+const WalkVector Step::ellipseClipVelocities(const WalkVector & source){
+	return ellipseClipVelocities(source,stepConfig);
+}
+
+const StepDisplacement
+Step::ellipseClipDisplacement(const StepDisplacement &source,
+							  const float step_config[]){
+
+	return getDispFromVel(ellipseClipVelocities(
+							  getVelFromDisp(source,step_config),
+							  step_config),step_config);
 }
 
 /**
@@ -216,7 +225,7 @@ const WalkVector Step::elipseClipVelocities(const WalkVector & source){
  *  generator, need to have access to it)
  *
  */
-const WalkVector Step::elipseClipVelocities(const WalkVector & source,
+const WalkVector Step::ellipseClipVelocities(const WalkVector & source,
 											const float step_config[]){
   // std::cout << "Ellipsoid clip input ("<<source.x<<","<<source.y
   // 			<<","<<source.theta<<")"<<std::endl;

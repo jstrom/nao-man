@@ -126,7 +126,7 @@ public:
     void takeSteps(const float _x, const float _y, const float _theta,
                    const int _numSteps);
 	void setDistance(const float x_dist, const float y_dist,
-					 const float z_dist);
+					 const float theta_dist);
     std::vector <float> getOdometryUpdate();
 
     void resetHard();
@@ -147,7 +147,7 @@ private: // Helper methods
 
     void swapSupportLegs();
 
-    void generateStep(float _x,float _y,
+	const boost::shared_ptr<Step> generateStep(float _x,float _y,
                       float _theta);
     void fillZMP(const boost::shared_ptr<Step> newStep );
     void fillZMPRegular(const boost::shared_ptr<Step> newStep );
@@ -155,10 +155,15 @@ private: // Helper methods
 
     void resetSteps(const bool startLeft);
 
-    static const NBMath::ufmatrix3 get_f_fprime(const boost::shared_ptr<Step> step);
-    static const NBMath::ufmatrix3 get_fprime_f(const boost::shared_ptr<Step> step);
-    static const NBMath::ufmatrix3 get_sprime_s(const boost::shared_ptr<Step> step);
-    static const NBMath::ufmatrix3 get_s_sprime(const boost::shared_ptr<Step> step);
+    static const NBMath::ufmatrix3
+	get_f_fprime(const boost::shared_ptr<Step> step);
+    static const NBMath::ufmatrix3
+	get_fprime_f(const boost::shared_ptr<Step> step);
+    static const NBMath::ufmatrix3
+	get_sprime_s(const boost::shared_ptr<Step> step);
+    static const NBMath::ufmatrix3
+	get_s_sprime(const boost::shared_ptr<Step> step);
+	static const NBMath::ufmatrix3 get_f_s(const boost::shared_ptr<Step> step);
 
     const bool decideStartLeft(const float lateralVelocity,
                                const float radialVelocity);
