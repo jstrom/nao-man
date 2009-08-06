@@ -27,6 +27,11 @@ struct WalkVector {
   float theta;
 };
 
+struct StepDisplacement {
+  float x;
+  float y;
+  float theta;
+};
 static const WalkVector ZERO_WALKVECTOR = {0.0f,0.0f,0.0f};
 
 /**
@@ -36,9 +41,15 @@ class Step{
 public:
     Step(const Step & other);
     Step(const WalkVector &target,
-         const AbstractGait & gait,	 
+         const AbstractGait & gait,
 	 const Foot _foot,
 	 const WalkVector &last = ZERO_WALKVECTOR,
+         const StepType _type = REGULAR_STEP);
+
+    Step(const StepDisplacement &target,
+         const AbstractGait & gait,
+		 const Foot _foot,
+		 const WalkVector &last = ZERO_WALKVECTOR,
          const StepType _type = REGULAR_STEP);
     // Copy constructor to allow changing reference frames:
     Step(const float new_x, const float new_y, const float new_theta,
@@ -78,13 +89,29 @@ private:
     void copyAttributesFromOther(const Step &other);
     void setStepSize(const WalkVector &target,
 		     const WalkVector &last);
-    
+
     void setStepLiftMagnitude();
 
-    const WalkVector elipseClipVelocities(const WalkVector & source);
+	const WalkVector ellipseClipVelocities(const WalkVector & source);
+    static const WalkVector ellipseClipVelocities(const WalkVector & source,
+												 const float step_config[]);
+
+
     const WalkVector accelClipVelocities(const WalkVector & source,
                                          const WalkVector & last);
     const WalkVector lateralClipVelocities(const WalkVector & source);
+
+	const StepDisplacement getDispFromVel(const WalkVector &vel);
+	const WalkVector getVelFromDisp(const StepDisplacement &disp);
+
+	static const StepDisplacement getDispFromVel(const WalkVector &vel,
+												 const float step_config[]);
+	static const WalkVector getVelFromDisp(const StepDisplacement &disp,
+										   const float step_config[]);
+public:
+	static const StepDisplacement
+	ellipseClipDisplacement(const StepDisplacement & source,
+							const float step_config[]);
 };
 
 static const boost::shared_ptr<Step> EMPTY_STEP =

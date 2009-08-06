@@ -38,6 +38,7 @@ using namespace boost::python;
 #include "MotionInterface.h"
 #include "Kinematics.h"
 #include "StepCommand.h"
+#include "DistanceCommand.h"
 using namespace Kinematics;
 
 static MotionInterface* interface_reference = 0;
@@ -168,6 +169,26 @@ private:
     boost::shared_ptr<StepCommand> command;
 };
 
+class PyDistanceCommand {
+public:
+    PyDistanceCommand(float x_cm, float m_cm, float theta_deg) {
+        //All python units should be in CM and DEG per second
+        //C++ is in mm and rads, so we need to convert
+        command =
+            boost::shared_ptr<DistanceCommand>(new DistanceCommand(x_cm
+																   *CM_TO_MM,
+																   m_cm
+																   *CM_TO_MM,
+																   theta_deg
+																   *TO_RAD));
+    }
+
+    boost::shared_ptr<DistanceCommand> getCommand() const { return command; }
+
+private:
+    boost::shared_ptr<DistanceCommand> command;
+};
+
 class PyBodyJointCommand {
 public:
     PyBodyJointCommand(float time,
@@ -287,6 +308,9 @@ public:
     void sendStepCommand(const PyStepCommand *command) {
         motionInterface->sendStepCommand(command->getCommand());
     }
+    void sendDistanceCommand(const PyDistanceCommand *command) {
+        motionInterface->sendDistanceCommand(command->getCommand());
+    }
     void setGait(const PyGaitCommand *command) {
         motionInterface->setGait(command->getCommand());
     }
@@ -386,6 +410,11 @@ BOOST_PYTHON_MODULE(_motion)
  "A container for a step command. Holds an x, y and theta which represents a"
  " walk vector, in addition to the number of desired steps."))
         ;
+    class_<PyDistanceCommand>("DistanceCommand",
+                          init<float, float, float>(args("x","y","theta"),
+ "A container for a distance command. Holds an x, y and theta which represent a"
+ " the distance to be walked."))
+        ;
 
     class_<PyFreezeCommand>("FreezeCommand",
                               init<>("A container for a "
@@ -403,6 +432,7 @@ BOOST_PYTHON_MODULE(_motion)
         .def("enqueue", enq2)
         .def("setNextWalkCommand", &PyMotionInterface::setNextWalkCommand)
         .def("sendStepCommand", &PyMotionInterface::sendStepCommand)
+        .def("sendDistanceCommand", &PyMotionInterface::sendDistanceCommand)
         .def("setGait", &PyMotionInterface::setGait)
         .def("setHead",&PyMotionInterface::setHead)
         .def("sendFreezeCommand",frz1)

@@ -30,7 +30,7 @@ STEP_CONFIG = (0.4, # step duration
                0.0,  # step lift
                7.0,  # max x speed
                -7.0,  # max x speed
-               7.0,  # max y speed
+               3.5,  # max y speed
                20.0, # max theta speed()
                7.0,  # max x accel
                7.0,  # max y accel
@@ -44,7 +44,7 @@ MARVIN_STEP_CONFIG = (0.4, # step duration
                0.0,  # step lift
                7.0,  # max x speed
                -7.0,  # max x speed
-               7.0,  # max y speed
+               3.5,  # max y speed
                20.0, # max theta speed()
                7.0,  # max x accel
                7.0,  # max y accel
@@ -179,7 +179,7 @@ DUCK_STEP = (0.4, # step duration
              -5.0,  # step lift
              7.0,  # max x speed
              -7.0,  # min x speed
-             7.0,  # max y speed
+             3.5,  # max y speed
              5.0, # max theta speed()
              7.0,  # max x accel
              7.0,  # max y accel
@@ -203,7 +203,7 @@ WEBOTS_STEP_CONFIG = (0.4, # step duration
                       0.0,  # step lift
                       10.0,  # max x speed
                       -6.0,  # max x speed
-                      10.0,  # max y speed
+                      5.0,  # max y speed
                       30.0,  # max theta speed()
                       5.0,  # max x acc
                       5.0,  # max y acc
@@ -260,7 +260,7 @@ MARVIN_MED_STEP = (0.4, # step duration
             -5.0,  # step lift
             10.0,  # max x speed
             -5.0,  # max x speed
-            10.0,  # max y speed
+            5.0,  # max y speed
             30.0, # max theta speed()
             7.0,  # max x accel
             7.0,  # max y accel
@@ -273,7 +273,7 @@ MED_STEP = (0.4, # step duration
             -5.0,  # step lift
             10.0,  # max x speed
             -5.0,  # max x speed
-            10.0,  # max y speed
+            5.0,  # max y speed
             30.0, # max theta speed()
             7.0,  # max x accel
             7.0,  # max y accel
@@ -343,7 +343,7 @@ FAST_STEP = (0.5, # step duration
             -5.0,  # step lift
             15.0,  # max x speed
             -5.0,  # max x speed
-            15.0,  # max y speed
+            7.5,  # max y speed
             45.0, # max theta speed()
             7.0,  # max x accel
             7.0,  # max y accel
@@ -402,7 +402,7 @@ COM_STEP = (0.5, # step duration
             0.0,  # step lift
             20.0,  # max x speed
             -4.0,  # max x speed
-            10.0,  # max y speed
+            5.0,  # max y speed
             30.0, # max theta speed()
             5.0,  # max x accel
             5.0,  # max y accel

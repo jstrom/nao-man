@@ -39,6 +39,7 @@ WalkProvider::WalkProvider(shared_ptr<Sensors> s,
       stepGenerator(sensors,&metaGait),
       pendingCommands(false),
       pendingStepCommands(false),
+	  pendingDistCommands(false),
       pendingGaitCommands(false),
       pendingStartGaitCommands(false),
       nextCommand(NULL)
@@ -59,7 +60,7 @@ void WalkProvider::requestStopFirstInstance() {
 void WalkProvider::hardReset(){
     pthread_mutex_lock(&walk_provider_mutex);
     stepGenerator.resetHard();
-    pendingCommands = pendingStepCommands =false;
+    pendingCommands = pendingStepCommands = pendingDistCommands = false;
     setActive();
     pthread_mutex_unlock(&walk_provider_mutex);
 }
@@ -98,6 +99,13 @@ void WalkProvider::calculateNextJointsAndStiffnesses() {
                                 nextStepCommand->numSteps);
     }
     pendingStepCommands=false;
+
+	if(pendingDistCommands){
+		stepGenerator.setDistance(nextDistCommand->x_mm,
+								  nextDistCommand->y_mm,
+								  nextDistCommand->theta_rad);
+	}
+	pendingDistCommands = false;
 
     //Also need to process stepCommands here
 
@@ -173,9 +181,17 @@ void WalkProvider::setCommand(const boost::shared_ptr<StepCommand> command){
     setActive();
     pthread_mutex_unlock(&walk_provider_mutex);
 }
+void WalkProvider::setCommand(const boost::shared_ptr<DistanceCommand> command){
+    pthread_mutex_lock(&walk_provider_mutex);
+    nextDistCommand = command;
+    pendingDistCommands = true;
+    setActive();
+    pthread_mutex_unlock(&walk_provider_mutex);
+}
 void WalkProvider::setActive(){
     //check to see if the walk engine is active
-    if(stepGenerator.isDone() && !pendingCommands && !pendingStepCommands){
+    if(stepGenerator.isDone() && !pendingCommands
+	   && !pendingStepCommands && !pendingDistCommands){
         inactive();
     }else{
         active();
