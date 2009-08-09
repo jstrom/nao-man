@@ -47,6 +47,7 @@
 #include "MetaGait.h"
 #include "BodyJointCommand.h"
 #include "StepCommand.h"
+#include "DistanceCommand.h"
 
 #include "Profiler.h"
 
@@ -73,6 +74,7 @@ public:
 	void setCommand(const WalkCommand * command);
 	void setCommand(const boost::shared_ptr<Gait> command);
 	void setCommand(const boost::shared_ptr<StepCommand> command);
+	void setCommand(const boost::shared_ptr<DistanceCommand> command);
 
     std::vector<BodyJointCommand *> getGaitTransitionCommand();
     MotionModel getOdometryUpdate(){
@@ -96,12 +98,14 @@ private:
     StepGenerator stepGenerator;
     bool pendingCommands;
     bool pendingStepCommands;
+    bool pendingDistCommands;
     bool pendingGaitCommands;
     bool pendingStartGaitCommands;
 
     mutable pthread_mutex_t walk_provider_mutex;
     const WalkCommand * nextCommand;
-     boost::shared_ptr<StepCommand> nextStepCommand;
+	boost::shared_ptr<StepCommand> nextStepCommand;
+	boost::shared_ptr<DistanceCommand> nextDistCommand;
 
 };
 

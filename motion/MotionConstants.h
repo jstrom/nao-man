@@ -30,6 +30,7 @@ namespace MotionConstants {
 	enum MotionType {
 		WALK = 0,
         STEP,
+		DIST,
 		BODY_JOINT,
 		HEAD_JOINT,
         GAIT,
@@ -41,6 +42,7 @@ namespace MotionConstants {
 
 	const static unsigned int WALK_NUM_CHAINS = Kinematics::NUM_BODY_CHAINS;
 	const static unsigned int STEP_NUM_CHAINS = Kinematics::NUM_BODY_CHAINS;
+	const static unsigned int DIST_NUM_CHAINS = Kinematics::NUM_BODY_CHAINS;
 	const static unsigned int BODY_JOINT_NUM_CHAINS = Kinematics::NUM_BODY_CHAINS;
 	const static unsigned int HEAD_JOINT_NUM_CHAINS = 1;
     const static unsigned int GAIT_NUM_CHAINS = Kinematics::NUM_BODY_CHAINS;
@@ -55,6 +57,12 @@ namespace MotionConstants {
        Kinematics::RARM_CHAIN };
 
 	const static int STEP_CHAINS[STEP_NUM_CHAINS] =
+      {Kinematics::LARM_CHAIN,
+       Kinematics::LLEG_CHAIN,
+       Kinematics::RLEG_CHAIN,
+       Kinematics::RARM_CHAIN };
+
+	const static int DIST_CHAINS[STEP_NUM_CHAINS] =
       {Kinematics::LARM_CHAIN,
        Kinematics::LLEG_CHAIN,
        Kinematics::RLEG_CHAIN,

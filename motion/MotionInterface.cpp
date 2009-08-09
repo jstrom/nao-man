@@ -19,12 +19,17 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "MotionInterface.h"
+using boost::shared_ptr;
 
 void MotionInterface::setNextWalkCommand(const WalkCommand *command){
     switchboard->sendMotionCommand(command);
 }
 void
-MotionInterface::sendStepCommand(const boost::shared_ptr<StepCommand> command){
+MotionInterface::sendStepCommand(const shared_ptr<StepCommand> command){
+    switchboard->sendMotionCommand(command);
+}
+void
+MotionInterface::sendDistanceCommand(const shared_ptr<DistanceCommand> command){
     switchboard->sendMotionCommand(command);
 }
 void MotionInterface::enqueue(const BodyJointCommand *command){
@@ -39,10 +44,10 @@ void MotionInterface::setHead(const SetHeadCommand *command){
     switchboard->sendMotionCommand(command);
 }
 
-void MotionInterface::sendFreezeCommand(const boost::shared_ptr<FreezeCommand> command){
+void MotionInterface::sendFreezeCommand(const shared_ptr<FreezeCommand> command){
     switchboard->sendMotionCommand(command);
 }
-void MotionInterface::sendFreezeCommand(const boost::shared_ptr<UnfreezeCommand> command){
+void MotionInterface::sendFreezeCommand(const shared_ptr<UnfreezeCommand> command){
     switchboard->sendMotionCommand(command);
 }
 
@@ -84,7 +89,7 @@ void MotionInterface::setWalkExtraConfig( float pLHipRollBacklashCompensator,
 					  float pTorsoYOrientation) {
 }
 
-void MotionInterface::setGait(const boost::shared_ptr<Gait> command){
+void MotionInterface::setGait(const shared_ptr<Gait> command){
     switchboard->sendMotionCommand(command);
 }
 

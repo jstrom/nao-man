@@ -81,6 +81,7 @@ public:
 	void sendMotionCommand(const boost::shared_ptr<FreezeCommand> command);
 	void sendMotionCommand(const boost::shared_ptr<UnfreezeCommand> command);
 	void sendMotionCommand(const boost::shared_ptr<StepCommand> command);
+	void sendMotionCommand(const boost::shared_ptr<DistanceCommand> command);
 
 public:
     void stopHeadMoves(){headProvider.requestStop();}

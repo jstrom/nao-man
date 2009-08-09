@@ -634,3 +634,11 @@ MotionSwitchboard::sendMotionCommand(const shared_ptr<StepCommand> command){
     pthread_mutex_unlock(&next_provider_mutex);
 }
 
+void
+MotionSwitchboard::sendMotionCommand(const shared_ptr<DistanceCommand> command){
+    pthread_mutex_lock(&next_provider_mutex);
+    nextProvider = &walkProvider;
+    walkProvider.setCommand(command);
+    pthread_mutex_unlock(&next_provider_mutex);
+}
+
