@@ -62,15 +62,6 @@
 #include "NBMatrixMath.h"
 #include  "Sensors.h"
 
-//DEBUG Switches:
-#ifdef WALK_DEBUG
-//#define DEBUG_WALKING_STATE_TRANSITIONS
-//#define DEBUG_WALKING_GOAL_CONTINUITY
-#  define DEBUG_WALKING_LOCUS_LOGGING
-#  define DEBUG_WALKING_DEST_LOGGING
-#  define DEBUG_WALKING_SENSOR_LOGGING
-#endif
-
 typedef boost::tuple<std::vector<float>,
                      std::vector<float> > LegJointStiffTuple;
 

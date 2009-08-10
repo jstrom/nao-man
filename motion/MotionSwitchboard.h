@@ -35,8 +35,6 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
-#include "motionconfig.h" // for cmake set debugging flags like MOTION_DEBUG
-
 #include "MCL.h"
 #include "Kinematics.h"
 #include "WalkProvider.h"
@@ -54,10 +52,6 @@
 #include "WalkCommand.h"
 #include "Gait.h"
 #include "SetHeadCommand.h"
-
-#ifdef DEBUG_MOTION
-#  define DEBUG_JOINTS_OUTPUT
-#endif
 
 
 class MotionSwitchboard {
@@ -109,11 +103,9 @@ private:
     void swapHeadProvider();
     int realityCheckJoints();
 
-#ifdef DEBUG_JOINTS_OUTPUT
     void initDebugLogs();
     void closeDebugLogs();
     void updateDebugLogs();
-#endif
 
 private:
     boost::shared_ptr<Sensors> sensors;
@@ -149,11 +141,9 @@ private:
 
     bool noWalkTransitionCommand;
 
-#ifdef DEBUG_JOINTS_OUTPUT
     FILE* joints_log;
     FILE* stiffness_log;
     FILE* effector_log;
-#endif
 
 };
 

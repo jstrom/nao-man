@@ -9,6 +9,12 @@ using namespace boost;
 #include "NBMatrixMath.h"
 using namespace Kinematics;
 using namespace NBMath;
+
+#include "motionconfig.h" // for cmake set debugging flags like MOTION_DEBUG
+#ifdef DEBUG_MOTION
+#  define DEBUG_JOINTS_OUTPUT
+#endif
+
 //#define DEBUG_SWITCHBOARD
 
 const float MotionSwitchboard::sitDownAngles[NUM_BODY_JOINTS] =

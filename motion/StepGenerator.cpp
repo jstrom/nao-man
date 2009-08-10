@@ -34,6 +34,13 @@ using namespace boost::numeric;
 using namespace Kinematics;
 using namespace NBMath;
 
+#include "motionconfig.h"
+#ifdef DEBUG_MOTION
+//Debugging flags:
+#  define DEBUG_CONTROLLER_COM
+#  define DEBUG_SENSOR_ZMP
+#endif
+
 //#define DEBUG_STEPGENERATOR
 
 StepGenerator::StepGenerator(shared_ptr<Sensors> s, const MetaGait * _gait)

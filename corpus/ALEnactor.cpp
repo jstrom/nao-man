@@ -25,6 +25,8 @@
 using namespace boost::assign;
 using namespace AL;
 
+#include "motionconfig.h"
+
 #include "Kinematics.h"
 using namespace Kinematics;
 const int ALEnactor::MOTION_FRAME_RATE = 50;

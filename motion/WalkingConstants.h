@@ -26,11 +26,6 @@
 #include "Kinematics.h"
 #include "InverseKinematics.h"
 
-#include "motionconfig.h" // for cmake set debugging flags like MOTION_DEBUG
-#ifdef DEBUG_MOTION
-#  define WALK_DEBUG
-#endif
-
 #include "MotionConstants.h"
 
 

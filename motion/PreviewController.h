@@ -43,11 +43,6 @@
 
 #include "NBMatrixMath.h"
 #include "WalkController.h"
-#include "motionconfig.h"
-
-#ifdef DEBUG_MOTION
-#  define DEBUG_CONTROLLER_GAINS
-#endif
 
 class PreviewController : public WalkController {
 public:

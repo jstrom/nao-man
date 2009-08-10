@@ -92,11 +92,7 @@
 #include "ZmpEKF.h"
 #include "ZmpAccEKF.h"
 
-//Debugging flags:
-#ifdef WALK_DEBUG
-#  define DEBUG_CONTROLLER_COM
-#  define DEBUG_SENSOR_ZMP
-#endif
+
 
 typedef boost::tuple<const std::list<float>*,
                      const std::list<float>*> zmp_xy_tuple;
@@ -238,13 +234,9 @@ private:
 
     NBMath::ufvector4 accInWorldFrame;
 
-#ifdef DEBUG_CONTROLLER_COM
     FILE* com_log;
     NBMath::ufmatrix3 fi_Transform;
-#endif
-#ifdef DEBUG_SENSOR_ZMP
     FILE* zmp_log;
-#endif
 
 };
 

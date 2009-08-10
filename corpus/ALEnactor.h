@@ -31,7 +31,6 @@
 #include "dcmproxy.h"
 #include "almemoryfastaccess.h"
 
-#include "motionconfig.h"
 #include "Sensors.h"
 #include "ThreadedMotionEnactor.h"
 #include "MotionSwitchboard.h"

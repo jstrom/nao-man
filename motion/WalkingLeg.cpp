@@ -25,6 +25,17 @@ using namespace std;
 using namespace Kinematics;
 using namespace NBMath;
 
+#include "motionconfig.h"
+
+//DEBUG Switches:
+#ifdef MOTION_DEBUG
+//#define DEBUG_WALKING_STATE_TRANSITIONS
+//#define DEBUG_WALKING_GOAL_CONTINUITY
+#  define DEBUG_WALKING_LOCUS_LOGGING
+#  define DEBUG_WALKING_DEST_LOGGING
+#  define DEBUG_WALKING_SENSOR_LOGGING
+#endif
+
 //#define DEBUG_WALKINGLEG
 
 WalkingLeg::WalkingLeg(boost::shared_ptr<Sensors> s,

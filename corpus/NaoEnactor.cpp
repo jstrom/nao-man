@@ -14,6 +14,8 @@ using namespace boost;
 #include "ALNames.h"
 using namespace ALNames;
 
+#include "motionconfig.h"
+
 #include "Kinematics.h"
 using Kinematics::jointsMaxVelNoLoad;
 
