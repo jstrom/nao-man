@@ -46,6 +46,11 @@ const float LocEKF::Y_EST_MIN = 0.0f;
 const float LocEKF::X_EST_MAX = FIELD_GREEN_WIDTH;
 const float LocEKF::Y_EST_MAX = FIELD_GREEN_HEIGHT;
 
+//JHS: You should rewrite this LOC filter so the uncertainty update to
+// the a priori (timestep) covariance P_k_bar depends on the size of
+// the odometry step taken. or at least, most partly in this direction.
+// This way, the covariance will stay lower when you aren't moving/moving fast
+
 /**
  * Initialize the localization EKF class
  *
@@ -323,6 +328,16 @@ void LocEKF::incorporateMeasurement(Observation z,
         V_k = z_x - d_x;
         V_k(1) = NBMath::subPIAngle(V_k(1));
 
+	//JHS: This is the measurement jacobian
+	// it should be d(measure)/d(state)
+
+	// e.g. H[0][0] is d(d_x(0))/d(x)
+	// this is d/dx[Sqrt(x-x_b )^2+ (y - y_b)^2)] = 2*(x-x_b)/d(0)
+
+	// e.g. H[1][0] is d(d_x(1))/d(x)
+	// this is d/dx[atan(y_b-y / x_b-x)] = 2*(y-y_b)/(d(0)**2)
+	// Just seems like some twos are missing... hmm
+
         // Calculate jacobians
         H_k(0,0) = (x - x_b) / d_x(0);
         H_k(0,1) = (y - y_b) / d_x(0);
@@ -411,6 +426,9 @@ float LocEKF::getDivergence(Observation * z, PointLandmark pt)
     float x_b  = (pt.x - x) * cosh + (pt.y - y) * sinh;
     float y_b = -(pt.x - x) * sinh + (pt.y - y) * cosh;
 
+    //JHS: This line uses euclidean distance.
+    //    you could include the uncert of the measurement (S_k = HPHt + R)
+    //    and use mahalanobis distance that way
     return static_cast<float>(hypot(x_b_r - x_b, y_b_r - y_b));
 }
 
